@@ -7,8 +7,14 @@ import json
 import time
 from random import randint
 
-DIFFICULTY = 7
+# 'https://submit_block.php'
+# 'https://miners.sooners.us/submit_block.php' 
+SUBMIT_BLOCK = 'http://localhost/MyWebsite/submit_block.php'
+
+# 'latest_block.php'
+# 'https://miners.sooners.us/latest_block.php'
 LATEST_BLOCK = 'https://miners.sooners.us/latest_block.php'
+DIFFICULTY = 6
 
 '''
 generate random 10 digit number
@@ -22,8 +28,7 @@ def random_with_N_digits(n):
 calculate the hash value of a block
 """
 def calculate_hash(index, previous_hash, timestamp, data, nonce):
-    block_header = str(index) + str(previous_hash) + str(timestamp) + str(data) + str(nonce)
-    print(block_header)
+    block_header = str(index) + previous_hash + str(timestamp) + data + str(nonce)
     return hashlib.sha256(block_header.encode()).hexdigest()
 
 '''
@@ -32,9 +37,9 @@ now pack it up and submit
 '''
 def submitBlock(index, currentHash, timestamp, nonce, newHash):
     payload = {
-        "index": int(index),
+        "index": int(index + 1),
         "previousHash": str(currentHash),
-        "timestamp": time.time(),
+        "timestamp": int(time.time()),
         "data": "Daniel Yowell",
         "nonce": int(nonce),
         "hash": str(newHash)
@@ -49,10 +54,10 @@ def submitBlock(index, currentHash, timestamp, nonce, newHash):
     # set Content-Type header (prevents url encoding)
     headers = {'Content-Type': 'application/json'}
 
-    response = requests.post('https://miners.sooners.us/submit_block.php', data=payload_json, headers=headers)
+    response = requests.post(SUBMIT_BLOCK, data=payload_json, headers=headers)
     print("===RESULTS===")
-    print("STATUS:  ", json.loads(response.text)["status"])
-    print("MESSAGE: ", json.loads(response.text)["message"])
+    # print("STATUS:  ", json.loads(response.text)["status"])
+    # print("MESSAGE: ", json.loads(response.text)["message"])
 
 '''
 retrives info from latest block
@@ -64,36 +69,37 @@ def getData(block):
 main
 '''
 if __name__ == "__main__":
-
+    #main()
+    diff = DIFFICULTY
     sleepTime = 0.1
     
     previousHash = "[BEGIN_PROGRAM]"
     currentHash = ""
     nonce = random_with_N_digits(10)
-    prefix = '0' * DIFFICULTY
+    prefix = '0' * diff
 
-    while True:
-        response = requests.get(LATEST_BLOCK)    
-        if response.status_code == 200:
-            block = response.json()
-            # get index, timestamp, data, and CURRENT hash
-            index, timestamp, data, currentHash = getData(block)
-            
-            # did the hash change? if so, reset nonce
-            if currentHash != previousHash:
-                print("hash change: was ", previousHash, ", now ", currentHash, sep="")
-                #nonce = 0
-            
-            # try to generate a new hash:
+    response = requests.get(LATEST_BLOCK)    
+    if response.status_code == 200:
+        block = response.json()
+        # get index, timestamp, data, and CURRENT hash
+        index, timestamp, data, currentHash = getData(block)
+        
+        print("current hash:", currentHash)
+
+        # try to generate a new hash:
+        while True:
             newHash = calculate_hash(index, currentHash, timestamp, data, nonce)            
             if newHash.startswith(prefix):
                 print("Nonce found:", nonce)
                 print("Block hash with 7 leading zeros:", newHash)
-                submitBlock(index, currentHash, timestamp, nonce, newHash)     
-            
+                submitBlock(index, currentHash, timestamp, nonce, newHash)
+                response = requests.get(LATEST_BLOCK) 
+                block = response.json()
+                # get index, timestamp, data, and CURRENT hash
+                index, timestamp, data, currentHash = getData(block)
             # increment nonce
-            nonce += 1
-        else:
-            print(f"Request failed with status code {response.status_code}")
-        previousHash = currentHash
-        #time.sleep(sleepTime)
+            nonce += 1     
+
+    else:
+        print(f"Request failed with status code {response.status_code}")
+    previousHash = currentHash

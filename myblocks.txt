@@ -1,0 +1,20 @@
+===+++++++===
+NEW POTENTIAL BLOCK
+Index: 3803
+Previous hash: 00000000a7309cb70b7071316b322ff351529d7998d807603f34408f21c685ee
+Timestamp: 1713846109
+Data: Daniel Yowell
+Nonce: 8480632804
+Full string: 380300000000a7309cb70b7071316b322ff351529d7998d807603f34408f21c685ee1713846109Daniel Yowell8480632804
+New hash: 00000005eb24b9c83578834ac1dd3b73ab005bff644bf6fdf3072c7ac0e80b47
+===PAYLOAD===
+{
+    'index': 3803, 
+    'previousHash': '00000000a7309cb70b7071316b322ff351529d7998d807603f34408f21c685ee', 
+    'timestamp': 1713846109, 'data': 'Daniel Yowell', 
+    'nonce': 8480632804, 
+    'hash': '00000005eb24b9c83578834ac1dd3b73ab005bff644bf6fdf3072c7ac0e80b47'
+}
+STATUS:  error
+MESSAGE: Failed to mine a valid block.
+===+++++++===
